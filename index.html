@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome to the 13th December Exhibition!</title>
+<style>
+/* Base */
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: flex-start;
+    align-items: center;
+}
+.app-container {
+    background: none; /* transparent to show gradient */
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+    box-sizing: border-box;
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+/* Title */
+h1 {
+    font-size: 32px;
+    color: #00796b;
+    margin: 10px 0 20px 0;
+}
+/* Dropdown + Reset */
+.select-reset-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px; 
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+.select-reset-container > div {
+    flex: 0 0 auto;
+}
+select {
+    font-size: 16px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    border: 1px solid #00796b;
+    width: 50%;
+    min-width: 120px;
+    background: #ffffff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.reset-btn {
+    background: #ffe0cc;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid #ff8a65;
+    min-width: 80px;
+}
+.reset-btn:hover {
+    background: #ffd6b3;
+}
+/* Question */
+.question {
+    font-weight: bold;
+    color: #004d40;
+    background: linear-gradient(to right, #b2dfdb, #80cbc4);
+    padding: 20px 15px;
+    border-radius: 20px;
+    border: 3px solid #004d40;
+    margin-bottom: 25px;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    transition: font-size 0.2s;
+}
+/* Buttons */
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+button.option-btn {
+    font-size: 28px;
+    padding: 22px 44px;
+    border: none;
+    border-radius: 25px;
+    background: #b2dfdb; /* soft color */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+    min-width: 100px;
+}
+button.option-btn:hover {
+    background: #80cbc4;
+    transform: translateY(-3px);
+}
+button.option-btn:active {
+    transform: scale(0.95);
+    background: #4db6ac;
+}
+/* Counts */
+.countbox {
+    font-size: 20px;
+    margin-top: 25px; /* space from buttons */
+    margin-bottom: 20px;
+    color: #00796b;
+}
+.countbox span {
+    display: inline-block;
+    background: #ffffff;
+    padding: 5px 12px;
+    border-radius: 12px;
+    margin: 8px 4px; /* more spacing around each count */
+    min-width: 50px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.2s, background 0.2s;
+}
+.countbox span.vote-pop {
+    transform: scale(1.3);
+    background: #b2dfdb; /* temporary highlight */
+}
+/* Confetti canvas */
+#confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+/* Responsive font scaling */
+@media (max-width: 400px) {
+    .question { font-size: 28px; }
+    button.option-btn { font-size: 22px; padding: 18px 36px; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="select-reset-container">
+        <div>
+            <select id="pollSelect">
+                <option value="poll1">Did you learn something new?</option>
+                <option value="poll2">Did you know how diverse the Jamat is?</option>
+                <option value="poll3">Did you enjoy and live this immersive experience?</option>
+            </select>
+        </div>
+        <div>
+            <button class="reset-btn" onclick="resetPoll(document.getElementById('pollSelect').value)">Reset</button>
+        </div>
+    </div>
+
+    <h1>Welcome to the 13th December Exhibition!</h1>
+
+    <div id="pollArea"></div>
+</div>
+
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const polls = {
+        poll1: { question: "Did you learn something new?", options: ["Yes", "No"] },
+        poll2: { question: "Did you know how diverse the Jamat is?", options: ["Yes", "No"] },
+        poll3: { question: "Did you enjoy and live this immersive experience?", options: ["👍", "👎"] }
+    };
+
+    function getCount(pollId, option) {
+        return Number(localStorage.getItem(pollId + "_" + option) || 0);
+    }
+
+    function setCount(pollId, option, value) {
+        localStorage.setItem(pollId + "_" + option, value);
+    }
+
+    function render() {
+        const pollId = document.getElementById("pollSelect").value;
+        const poll = polls[pollId];
+
+        let html = `<div class="question">${poll.question}</div><div class="button-row">`;
+
+        poll.options.forEach(option => {
+            html += `<button class="option-btn" onclick="vote('${pollId}','${option}')">${option}</button>`;
+        });
+
+        html += `</div><div class="countbox">Current Votes:<br>`;
+
+        poll.options.forEach(option => {
+            html += `<span>${option}: ${getCount(pollId, option)}</span>`;
+        });
+
+        html += `</div>`;
+        document.getElementById("pollArea").innerHTML = html;
+    }
+
+    window.vote = function(pollId, option) {
+        const current = getCount(pollId, option);
+        setCount(pollId, option, current + 1);
+        render();
+
+        // Animate the voted count
+        const countSpans = document.querySelectorAll('.countbox span');
+        countSpans.forEach(span => {
+            if(span.textContent.startsWith(option + ":")) {
+                span.classList.add('vote-pop');
+                setTimeout(() => {
+                    span.classList.remove('vote-pop');
+                }, 300);
+            }
+        });
+
+        if(option === "Yes" || option === "👍") {
+            triggerConfetti();
+        }
+    };
+
+    window.resetPoll = function(pollId) {
+        polls[pollId].options.forEach(option => setCount(pollId, option, 0));
+        render();
+    };
+
+    document.getElementById("pollSelect").addEventListener("change", render);
+
+    render();
+
+    // Confetti
+    const canvas = document.getElementById('confetti-canvas');
+    const ctx = canvas.getContext('2d');
+    let confettiParticles = [];
+
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    function createConfetti() {
+        for (let i = 0; i < 150; i++) {
+            confettiParticles.push({
+                x: Math.random()*canvas.width,
+                y: Math.random()*canvas.height - canvas.height,
+                r: Math.random()*6+4,
+                d: Math.random()*50+10,
+                color: `hsl(${Math.random()*360}, 100%, 50%)`,
+                tilt: Math.random()*10-10,
+                tiltAngleIncrement: Math.random()*0.07+0.05,
+                tiltAngle: 0
+            });
+        }
+    }
+
+    function drawConfetti() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        confettiParticles.forEach((p,i) => {
+            ctx.beginPath();
+            ctx.lineWidth = p.r/2;
+            ctx.strokeStyle = p.color;
+            ctx.moveTo(p.x + p.tilt + p.r/4, p.y);
+            ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r/4);
+            ctx.stroke();
+            p.tiltAngle += p.tiltAngleIncrement;
+            p.y += (Math.cos(p.d) + 3 + p.r/2)/2;
+            p.tilt = Math.sin(p.tiltAngle) * 15;
+            if(p.y > canvas.height) confettiParticles.splice(i,1);
+        });
+    }
+
+    function triggerConfetti() {
+        createConfetti();
+        let confettiInterval = setInterval(drawConfetti, 20);
+        setTimeout(() => { clearInterval(confettiInterval); confettiParticles = []; ctx.clearRect(0,0,canvas.width,canvas.height); }, 3000);
+    }
+});
+</script>
+
+</body>
+</html>
