@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome to the Exhibition!</title>
+<style>
+/* Base Styles */
+body {
+    font-family: 'Poppins', Arial, sans-serif;
+    background: linear-gradient(to bottom, #e0f7fa, #ffffff);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    min-height: 100vh;
+}
+.app-container {
+    flex: 1;
+    padding: 20px;
+    text-align: center;
+    overflow-x: hidden;
+}
+h1#exhibitionTitle {
+    font-size: 32px;
+    color: #00796b;
+    margin: 10px 0 20px 0;
+    cursor: pointer;
+}
+/* Dropdown + Reset */
+.select-reset-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px; 
+    flex-wrap: wrap;
+    margin-bottom: 15px;
+}
+select {
+    font-size: 16px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    border: 1px solid #00796b;
+    width: 50%;
+    min-width: 120px;
+    background: #ffffff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+.reset-btn {
+    background: #ffe0cc;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    border: 1px solid #ff8a65;
+    min-width: 80px;
+}
+.reset-btn:hover { background: #ffd6b3; }
+
+/* Question */
+.question {
+    font-weight: bold;
+    color: #004d40;
+    background: linear-gradient(to right, #b2dfdb, #80cbc4);
+    padding: 20px 15px;
+    border-radius: 20px;
+    border: 3px solid #004d40;
+    margin-bottom: 25px;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 28px;
+}
+/* Buttons */
+.button-row {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+button.option-btn {
+    font-size: 28px;
+    padding: 22px 44px;
+    border: none;
+    border-radius: 25px;
+    background: #b2dfdb;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    cursor: pointer;
+    transition: transform 0.1s, background 0.2s;
+    min-width: 100px;
+}
+button.option-btn:hover {
+    background: #80cbc4;
+    transform: translateY(-3px);
+}
+button.option-btn:active {
+    transform: scale(0.95);
+    background: #4db6ac;
+}
+
+/* Counts */
+.countbox {
+    font-size: 20px;
+    margin-top: 25px;
+    margin-bottom: 20px;
+    color: #00796b;
+}
+.countbox span {
+    display: inline-block;
+    background: #e0f2f1;
+    padding: 5px 12px;
+    border-radius: 12px;
+    margin: 8px 4px;
+    min-width: 50px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: transform 0.2s, background 0.2s;
+}
+.countbox span.vote-pop {
+    transform: scale(1.3);
+    background: #b2dfdb;
+}
+
+/* Confetti canvas */
+#confetti-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+}
+
+/* Side menu */
+#sideMenu {
+    position: fixed;
+    top: 0;
+    left: -300px;
+    width: 280px;
+    height: 100%;
+    background: #00796b;
+    color: white;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    transition: left 0.3s;
+    z-index: 1000;
+}
+#sideMenu.open { left: 0; }
+#sideMenu h2 { margin-top: 0; color: #ffe0b2; }
+#sideMenu input, #sideMenu textarea {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+}
+.sideBtn {
+    background: #ffe0b2;
+    color: #004d40;
+    border: none;
+    padding: 6px 12px;
+    margin: 4px 0;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.sideBtn:hover { background: #ffd699; }
+
+/* Polls list */
+.poll-section {
+    margin-bottom: 15px;
+}
+.poll-header {
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 6px 0;
+}
+.poll-header span { font-size: 16px; }
+.poll-questions { margin-left: 10px; display: none; }
+.poll-questions.active { display: block; }
+.question-item { display: flex; justify-content: space-between; margin: 4px 0; font-size: 14px; }
+.question-item button { padding: 2px 6px; font-size: 12px; }
+
+/* Hamburger */
+#hamburger {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    font-size: 28px;
+    cursor: pointer;
+    z-index: 1100;
+}
+
+/* Responsive */
+@media (max-width: 400px) {
+    .question { font-size: 24px; }
+    button.option-btn { font-size: 20px; padding: 16px 30px; }
+}
+</style>
+</head>
+<body>
+
+<div id="hamburger">☰</div>
+
+<div id="sideMenu">
+    <h2>Admin Menu</h2>
+    <label>Edit Exhibition Title:</label>
+    <input id="editTitleInput" type="text" placeholder="Title here">
+    <button class="sideBtn" onclick="saveTitle()">Save Title</button>
+
+    <h3>Create New Poll</h3>
+    <input id="newPollTitle" placeholder="Poll title">
+    <button class="sideBtn" onclick="addPoll()">Add Poll</button>
+
+    <h3>Add Question</h3>
+    <label>Selected Poll:</label>
+    <select id="pollSelectAdmin"></select>
+    <input id="newQuestionText" placeholder="Question text">
+    <input id="newQuestionOptions" placeholder="Options comma separated (Yes,No)">
+    <button class="sideBtn" onclick="addQuestion()">Add Question</button>
+
+    <h3>Polls & Questions</h3>
+    <div id="pollsList"></div>
+
+    <h3>Export Votes</h3>
+    <button class="sideBtn" onclick="exportCSV()">Export CSV</button>
+</div>
+
+<div class="app-container">
+    <div class="select-reset-container">
+        <div>
+            <select id="pollSelect"></select>
+        </div>
+        <div>
+            <select id="questionSelect"></select>
+        </div>
+        <div>
+            <button class="reset-btn" onclick="resetVotes()">Reset Votes</button>
+        </div>
+    </div>
+
+    <h1 id="exhibitionTitle">Welcome to the Exhibition!</h1>
+
+    <div id="pollArea"></div>
+</div>
+
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+let polls = {}; // All polls and questions
+let selectedPoll = null;
+let selectedQuestion = null;
+
+// Hamburger menu
+const hamburger = document.getElementById('hamburger');
+const sideMenu = document.getElementById('sideMenu');
+hamburger.addEventListener('click', ()=>{ sideMenu.classList.toggle('open'); });
+
+// Update Poll Dropdowns
+function updatePollDropdowns(){
+    const pollSelect = document.getElementById('pollSelect');
+    const pollSelectAdmin = document.getElementById('pollSelectAdmin');
+    pollSelect.innerHTML = '';
+    pollSelectAdmin.innerHTML = '';
+    Object.keys(polls).forEach(key=>{
+        const opt = document.createElement('option');
+        opt.value = key; opt.textContent = key;
+        pollSelect.appendChild(opt);
+        const optAdmin = document.createElement('option');
+        optAdmin.value = key; optAdmin.textContent = key;
+        pollSelectAdmin.appendChild(optAdmin);
+    });
+    if(Object.keys(polls).length>0 && !selectedPoll) selectedPoll = Object.keys(polls)[0];
+    pollSelect.value = selectedPoll;
+    pollSelectAdmin.value = selectedPoll;
+    updateQuestionDropdown();
+}
+
+// Update Question Dropdown
+function updateQuestionDropdown(){
+    const questionSelect = document.getElementById('questionSelect');
+    questionSelect.innerHTML = '';
+    if(selectedPoll && polls[selectedPoll]){
+        Object.keys(polls[selectedPoll]).forEach(q=>{
+            const opt = document.createElement('option');
+            opt.value = q; opt.textContent = q;
+            questionSelect.appendChild(opt);
+        });
+        if(Object.keys(polls[selectedPoll]).length>0 && !selectedQuestion) selectedQuestion = Object.keys(polls[selectedPoll])[0];
+        questionSelect.value = selectedQuestion;
+    }
+    renderPoll();
+}
+
+// Render Poll Area
+function renderPoll(){
+    const pollArea = document.getElementById('pollArea');
+    if(!selectedPoll || !selectedQuestion) { pollArea.innerHTML=''; return; }
+    const options = polls[selectedPoll][selectedQuestion];
+    let html = `<div class="question">${selectedQuestion}</div><div class="button-row">`;
+    options.forEach(opt=>{
+        html+=`<button class="option-btn" onclick="vote('${selectedPoll}','${selectedQuestion}','${opt}')">${opt}</button>`;
+    });
+    html+=`</div><div class="countbox">Current Votes:<br>`;
+    options.forEach(opt=>{
+        const count = Number(localStorage.getItem(selectedPoll+'_'+selectedQuestion+'_'+opt) || 0);
+        html+=`<span>${opt}: ${count}</span>`;
+    });
+    html+=`</div>`;
+    pollArea.innerHTML=html;
+}
+
+// Vote
+function vote(poll,q,option){
+    const key = poll+'_'+q+'_'+option;
+    localStorage.setItem(key, Number(localStorage.getItem(key)||0)+1);
+    renderPoll();
+    // Animate
+    const countSpans = document.querySelectorAll('.countbox span');
+    countSpans.forEach(span=>{
+        if(span.textContent.startsWith(option+':')){ span.classList.add('vote-pop'); setTimeout(()=>span.classList.remove('vote-pop'),300);}
+    });
+    if(option==='Yes'||option==='👍') triggerConfetti();
+}
+
+// Reset votes for current question
+function resetVotes(){
+    if(!selectedPoll||!selectedQuestion) return;
+    polls[selectedPoll][selectedQuestion].forEach(opt=>{
+        localStorage.setItem(selectedPoll+'_'+selectedQuestion+'_'+opt,0);
+    });
+    renderPoll();
+}
+
+// Add Poll
+function addPoll(){
+    const title = document.getElementById('newPollTitle').value.trim();
+    if(!title) return alert('Enter poll title');
+    if(polls[title]) return alert('Poll already exists');
+    polls[title]={};
+    document.getElementById('newPollTitle').value='';
+    selectedPoll=title; selectedQuestion=null;
+    updatePollDropdowns(); renderPoll(); renderAdminList();
+}
+
+// Add Question
+function addQuestion(){
+    if(!selectedPoll) return alert('Select poll first');
+    const qText = document.getElementById('newQuestionText').value.trim();
+    const opts = document.getElementById('newQuestionOptions').value.split(',').map(s=>s.trim()).filter(s=>s);
+    if(!qText||opts.length===0) return alert('Enter question and options');
+    polls[selectedPoll][qText]=opts;
+    document.getElementById('newQuestionText').value='';
+    document.getElementById('newQuestionOptions').value='';
+    selectedQuestion=qText;
+    updateQuestionDropdown(); renderAdminList();
+}
+
+// Edit Question
+function editQuestion(poll,q){
+    const newText = prompt('Edit question text:',q);
+    if(!newText) return;
+    polls[poll][newText]=polls[poll][q];
+    delete polls[poll][q];
+    if(selectedQuestion===q) selectedQuestion=newText;
+    updateQuestionDropdown(); renderAdminList();
+}
+
+// Delete Question
+function deleteQuestion(poll,q){
+    if(confirm(`Delete question "${q}"?`)){
+        delete polls[poll][q];
+        Object.keys(polls[poll]).forEach(opt=>{
+            polls[poll][q] && localStorage.removeItem(poll+'_'+q+'_'+opt);
+        });
+        if(selectedQuestion===q) selectedQuestion=null;
+        updateQuestionDropdown(); renderAdminList();
+    }
+}
+
+// Delete Poll
+function deletePoll(poll){
+    if(confirm(`Delete poll "${poll}" and all its questions?`)){
+        Object.keys(polls[poll]).forEach(q=>{
+            polls[poll][q].forEach(opt=>{
+                localStorage.removeItem(poll+'_'+q+'_'+opt);
+            });
+        });
+        delete polls[poll];
+        selectedPoll=Object.keys(polls)[0]||null;
+        selectedQuestion=null;
+        updatePollDropdowns(); renderAdminList();
+    }
+}
+
+// Render Admin List
+function renderAdminList(){
+    const container = document.getElementById('pollsList');
+    container.innerHTML='';
+    Object.keys(polls).forEach(p=>{
+        const pollDiv = document.createElement('div'); pollDiv.className='poll-section';
+        const header = document.createElement('div'); header.className='poll-header';
+        header.innerHTML=`<span>${p}</span><button class="sideBtn" onclick="deletePoll('${p}')">Delete Poll</button>`;
+        header.addEventListener('click', ()=>{ qDiv.classList.toggle('active'); });
+        pollDiv.appendChild(header);
+        const qDiv = document.createElement('div'); qDiv.className='poll-questions';
+        Object.keys(polls[p]).forEach(q=>{
+            const qItem = document.createElement('div'); qItem.className='question-item';
+            qItem.innerHTML=`<span>${q}</span><span><button class="sideBtn" onclick="editQuestion('${p}','${q}')">Edit</button> <button class="sideBtn" onclick="deleteQuestion('${p}','${q}')">Delete</button></span>`;
+            qDiv.appendChild(qItem);
+        });
+        pollDiv.appendChild(qDiv);
+        container.appendChild(pollDiv);
+    });
+}
+
+// Title editing
+function saveTitle(){
+    const val = document.getElementById('editTitleInput').value.trim();
+    if(val) document.getElementById('exhibitionTitle').textContent=val;
+}
+
+// Dropdown changes
+document.getElementById('pollSelect').addEventListener('change',(e)=>{ selectedPoll=e.target.value; selectedQuestion=null; updateQuestionDropdown(); });
+document.getElementById('questionSelect').addEventListener('change',(e)=>{ selectedQuestion=e.target.value; renderPoll(); });
+
+// Confetti
+const canvas = document.getElementById('confetti-canvas'); const ctx = canvas.getContext('2d'); let confettiParticles=[];
+function resizeCanvas(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
+window.addEventListener('resize',resizeCanvas); resizeCanvas();
+function createConfetti(){ for(let i=0;i<150;i++){ confettiParticles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height-canvas.height,r:Math.random()*6+4,d:Math.random()*50+10,color:`hsl(${Math.random()*360},100%,50%)`,tilt:Math.random()*10-10,tiltAngleIncrement:Math.random()*0.07+0.05,tiltAngle:0}); } }
+function drawConfetti(){ ctx.clearRect(0,0,canvas.width,canvas.height); confettiParticles.forEach((p,i)=>{ ctx.beginPath(); ctx.lineWidth=p.r/2; ctx.strokeStyle=p.color; ctx.moveTo(p.x+p.tilt+p.r/4,p.y); ctx.lineTo(p.x+p.tilt,p.y+p.tilt+p.r/4); ctx.stroke(); p.tiltAngle+=p.tiltAngleIncrement; p.y+=(Math.cos(p.d)+3+p.r/2)/2; p.tilt=Math.sin(p.tiltAngle)*15; if(p.y>canvas.height) confettiParticles.splice(i,1); }); }
+function triggerConfetti(){ createConfetti(); let confettiInterval=setInterval(drawConfetti,20); setTimeout(()=>{ clearInterval(confettiInterval); confettiParticles=[]; ctx.clearRect(0,0,canvas.width,canvas.height); },3000); }
+
+// CSV Export
+function exportCSV(){
+    let csv = 'Poll,Question,Option,Votes\n';
+    Object.keys(polls).forEach(p=>{
+        Object.keys(polls[p]).forEach(q=>{
+            polls[p][q].forEach(opt=>{
+                const count=Number(localStorage.getItem(p+'_'+q+'_'+opt)||0);
+                csv+=`${p},${q},${opt},${count}\n`;
+            });
+        });
+    });
+    const blob = new Blob([csv],{type:'text/csv'});
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download='polls_votes.csv';
+    link.click();
+}
+
+// Initial render
+updatePollDropdowns(); renderAdminList();
+</script>
+</body>
+</html>
